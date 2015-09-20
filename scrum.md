@@ -4,7 +4,7 @@
 
 **Scrum流程如下图：**
 
-![ScrumCN_Scrum_Process_710](http://www.scrumcn.com/agile/wp-content/uploads/2014/04/ScrumCN_Scrum_Process_710.png)
+![001](https://github.com/yshyee/my_work/blob/master/res/001.png)
 
 ##SCRUM框架包括3个角色、3个工件、5个活动、5个价值
 
