@@ -1,0 +1,209 @@
+主题：使用Karma以及Jasmine进行AngularJS基本测试．
+
+1：工程目录结构
+
+y@y:karma-t01$ tree -L 3
+
+    .
+    ├── client
+    │   ├── app
+    │   │   └── user
+    │   ├── bower_components
+    │   │   ├── angular
+    │   │   ├── angular-mocks
+    │   │   └── angular-resource
+    │   └── bower.json
+    ├── karma.conf.js
+    └── readme
+7 directories, 3 files
+
+项目说明：使用bower进行js包管理，使用Karma及Jasmine完成基本测试．
+使用bower在线安装工程所依赖的包：
+
+    y@y:client$ bower install angular
+    y@y:client$ bower install angular-resource
+    y@y:client$ bower install angular-mocks
+    
+user目录结构：
+
+    y@y:app$ tree -L 1 user/
+    user/
+    ├── user.js
+    ├── users.json
+    └── user.test.js
+    0 directories, 3 files
+    
+2：user.js
+
+    /**
+     * Created by y on 15-11-24.
+    */
+    'use strict';
+
+    var app = angular.module('Application', ['ngResource']);
+
+    app.factory('UserFactory', function($resource){
+        return $resource('users.json',{},{
+            query:{method:'GET',isArray:true}
+        });
+    });
+
+    app.controller('MainCtrl', function($scope,UserFactory) {
+        $scope.title = 'Hello AngularJS In Action!';
+        $scope.users = UserFactory.query();
+    });
+    
+3：user.test.js
+
+    /**
+     * Created by y on 15-11-24.
+     */
+    'use strict';
+
+    describe('MainCtrl',function(){
+        var scope,httpBackend;
+
+        beforeEach(angular.mock.module('Application'));
+
+        beforeEach(angular.mock.inject(function($rootScope,$controller,_$httpBackend_)  {
+
+        httpBackend = _$httpBackend_;
+        httpBackend.when('GET','users.json')
+            .respond([
+                {
+                    name:'张三', age:25
+                },
+                {
+                    name:'李四', age:24
+                },
+                {
+                    name:'王五', age:27
+                }
+            ]);
+
+            scope = $rootScope.$new();
+    
+            $controller('MainCtrl',{$scope:scope});
+        }));
+
+        //test begin
+        it('should have variable title="Hello AngularJS In Action!"',function(){
+            expect(scope.text).toBe('Hello AngularJS In Action!');
+        });
+
+        //test begin
+        it('should fetch list of users', function(){
+            httpBackend.flush();
+    
+            expect(scope.users.length).toBe(3);
+            expect(scope.users[0].name).toBe('张三');
+        });
+
+
+    });
+
+4：users.json
+
+    [
+      {
+        name:'张三', age:25
+      },
+      {
+        name:'李四', age:24
+      },
+      {
+        name:'王五', age:27
+      }
+    ]
+
+5:进行Karma文件配置，Karma默认使用Jasmine作为测试框架．
+切换到你想要放置配置文件的目录，然后在终端中输入下面的命令来创建配置文件：
+
+    y@y:karma-t01$ karma init karma.conf.js
+
+配置信息如下：主要进行files节点配置
+    // Karma configuration
+    // Generated on Tue Nov 24 2015 23:12:58 GMT+0800 (CST)
+
+    module.exports = function(config) {
+     config.set({
+
+        // base path that will be used to resolve all patterns (eg. files, exclude)
+        basePath: '',
+
+
+        // frameworks to use
+        // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
+        frameworks: ['jasmine'],
+
+
+        // list of files / patterns to load in the browser
+        files: [
+            'client/bower_components/angular/angular.js',
+            'client/bower_components/angular-mocks/angular-mocks.js',
+            'client/bower_components/angular-resource/angular-resource.js',
+            'client/app/**/*.js'
+        ],
+
+
+        // list of files to exclude
+        exclude: [
+        ],
+
+
+        // preprocess matching files before serving them to the browser
+        // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
+        preprocessors: {
+        },
+
+
+        // test results reporter to use
+        // possible values: 'dots', 'progress'
+        // available reporters: https://npmjs.org/browse/keyword/karma-reporter
+        reporters: ['progress'],
+
+
+        // web server port
+        port: 9876,
+
+
+        // enable / disable colors in the output (reporters and logs)
+        colors: true,
+
+
+        // level of logging
+        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+        logLevel: config.LOG_INFO,
+
+
+        // enable / disable watching file and executing tests whenever any file changes
+        autoWatch: true,
+    
+    
+        // start these browsers
+        // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+        browsers: ['Chrome'],
+
+
+        // Continuous Integration mode
+        // if true, Karma captures browsers, runs the tests and exits
+        singleRun: false
+      });
+    };
+
+6:在控制台输入命令进行测试
+
+    y@y:karma-t01$ karma start karma.conf.js 
+    INFO [karma]: Karma v0.12.32 server started at http://localhost:9876/
+    INFO [launcher]: Starting browser Chrome
+    INFO [Chrome 39.0.2171 (Linux)]: Connected on socket CO5e5TAX7Pv9PzqGAAAA with id 34588683
+    Chrome 39.0.2171 (Linux): Executed 2 of 2 SUCCESS (0.06 secs / 0.048 secs)
+
+
+提示执行2个测试，成功两个．
+
+7:参考链接
+
+    http://bower.io/
+    http://jasmine.github.io/
+    http://karma-runner.github.io/0.13/index.html
